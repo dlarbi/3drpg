@@ -25,12 +25,23 @@ require(["helper/util","app/ecs", "app/observers", "assets/3dModels", "app/UI"],
     var scene = new APP.Entity();
     scene.addComponent(new APP.Components.Scene());
 
+    var sky = new APP.Entity;
+    sky.addComponent(new APP.Components.Model3d(Models.desert()));
+    sky.addComponent(new APP.Components.Position(0, 80, 0));
+    sky.addComponent(new APP.Components.Size(380));
+
+    var floor = new APP.Entity();
+    floor.addComponent(new APP.Components.Model3d(Models.flatFloor()));
+    floor.addComponent(new APP.Components.Size(5));
+    floor.addComponent(new APP.Components.Position(0, 0, 0));
+
     var player = new APP.Entity();
     player.addComponent(new APP.Components.Model3d(Models.femaleCharacter));
     player.addComponent(new APP.Components.Size(.7));
     player.addComponent(new APP.Components.Position(0, 0, 0));
     player.addComponent(new APP.Components.PlayerControlled(player));
     player.addComponent(new APP.Components.Health());
+    player.addComponent(new APP.Components.Mass());
     player.addComponent(new APP.Components.Collides(0));
 
     var enemy = new APP.Entity();
@@ -39,9 +50,10 @@ require(["helper/util","app/ecs", "app/observers", "assets/3dModels", "app/UI"],
     enemy.addComponent(new APP.Components.Model3d(Models.cube3d()));
     enemy.addComponent(new APP.Components.Size(.7));
     enemy.addComponent(new APP.Components.Collides(0));
-    //enemy.addComponent(new APP.Components.RandomWalker(20)); //RandomWalker initialized with stepSize;
+    enemy.addComponent(new APP.Components.Mass());
+    //enemy.addComponent(new APP.Components.RandomWalker(.08)); //RandomWalker initialized with stepSize;
 
-    window.entityArray = [scene, player, enemy];
+    window.entityArray = [scene, sky, floor, player, enemy];
     APP.Systems.render3dModel(entityArray);
 
     //We handle impacts by observing collision events with the player object.
@@ -49,10 +61,10 @@ require(["helper/util","app/ecs", "app/observers", "assets/3dModels", "app/UI"],
     Observers.initialize(APP);
     Observers.collision();
     setInterval(function() {
-
-      APP.Systems.collisionDetection(entityArray);
       APP.Systems.physics(entityArray);
       APP.Systems.userInput(entityArray);
+      //APP.Systems.randomWalking(entityArray);
+      APP.Systems.collisionDetection(entityArray);
       APP.Systems.renderScene(entityArray);
     },30);
 

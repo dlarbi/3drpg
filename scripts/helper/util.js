@@ -39,10 +39,10 @@ define(function () {
 
         if (e.keyCode == '38') {
           // up arrow
-          window.userInputZ = -.05;
+          window.userInputZ = .05;
         }
         else if (e.keyCode == '40') {
-          window.userInputZ = .05;
+          window.userInputZ = -.05;
         }
         else if (e.keyCode == '37') {
           // left arrow

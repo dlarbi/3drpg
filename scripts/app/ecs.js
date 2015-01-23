@@ -60,6 +60,11 @@ define(function () {
         this.size = size;
         return this;
       },
+      Mass: function() {
+        this.name = 'Mass';
+        this.mass = 1;
+        return this;
+      },
       Position : function(x,y,z) {
         this.name = 'Position';
         this.x = x;
@@ -154,7 +159,8 @@ define(function () {
         this.renderer = new THREE.WebGLRenderer();
         this.renderer.setSize( window.innerWidth, window.innerHeight );
         this.renderer.setClearColor('#CCCCCC');
-        this.camera.position.z = 5;
+        this.camera.position.z = -5;
+        this.camera.position.y = 2;
         this.cameraFollows = true;
         var controls = new THREE.OrbitControls(this.camera)
         var ambientLight = new THREE.AmbientLight(0xBBBBBB);
@@ -178,14 +184,6 @@ define(function () {
             if(currentEntity.components.Scene.cameraFollows == true) {
               posX = ECS.Entities.Player.components.Position.x
               ECS.Entities.Player.components.Model3d.model.add(ECS.Scene.camera)
-            //  ECS.Entities.Player.components.Model3d.model.rotateOnAxis(ECS.Scene.camera.position.x, .1)
-              /*posX = ECS.Entities.Player.components.Position.x;
-              posY = ECS.Entities.Player.components.Position.y;
-              posZ = ECS.Entities.Player.components.Position.z;
-              ECS.Scene.camera.position.x = posX;
-              ECS.Scene.camera.position.y = posY+2;
-              ECS.Scene.camera.position.z = posZ+5;
-              ECS.Scene.camera.lookAt(new THREE.Vector3(posX,posY,posZ));*/
             }
             currentEntity.components.Scene.renderer.render(currentEntity.components.Scene.scene, currentEntity.components.Scene.camera);
           }
@@ -194,10 +192,14 @@ define(function () {
 
       render3dModel : function(entities) {
         var currentEntity;
-
+        var size;
         for(var i = 0; i < entities.length; i++) {
           currentEntity = entities[i];
           if(typeof currentEntity.components.Model3d != "undefined") {
+            if(typeof currentEntity.components.Size != "undefined") {
+              size = currentEntity.components.Size.size;
+              currentEntity.components.Model3d.model.scale.set(size,size,size)
+            }
             ECS.Scene.scene.add(currentEntity.components.Model3d.model)
           }
         }
@@ -207,14 +209,10 @@ define(function () {
         var currentEntity;
         for(var i = 0; i < entities.length; i++) {
           currentEntity = entities[i];
-          if(typeof currentEntity.components.PlayerControlled == "undefined" && typeof currentEntity.components.Model3d != "undefined" && typeof currentEntity.components.Position != "undefined") {
+          if(typeof currentEntity.components.Model3d != "undefined" && typeof currentEntity.components.Position != "undefined") {
             currentEntity.components.Model3d.model.position.x = currentEntity.components.Position.x;
             currentEntity.components.Model3d.model.position.y = currentEntity.components.Position.y;
             currentEntity.components.Model3d.model.position.z = currentEntity.components.Position.z;
-            if(typeof currentEntity.components.PlayerControlled != "undefined") {
-            //  currentEntity.components.Model3d.model.rotateOnAxis( new THREE.Vector3(0,1,0), .2 )
-
-            }
           }
         }
       },
@@ -230,11 +228,14 @@ define(function () {
       },
 
       gravity : function(entity) {
-        if(entity.components.Position.y > 0) {
-          entity.components.Position.y-=.1;
-        } else {
-          entity.components.Position.y = 0;
+        if(typeof entity.components.Mass != "undefined") {
+          if(entity.components.Position.y > 0) {
+            entity.components.Position.y-=.1;
+          } else {
+            entity.components.Position.y = 0;
+          }
         }
+
       },
       renderCSSModel : function(entities) {
         var el;
@@ -337,12 +338,14 @@ define(function () {
         for(var i = 0; i < entities.length; i++) {
           currentEntity = entities[i];
           if(typeof currentEntity.components.PlayerControlled != "undefined") {
-            currentEntity.components.Position.x+=window.userInputX;
-            currentEntity.components.Position.y+=window.userInputY;
-            currentEntity.components.Position.z+=window.userInputZ;
-            currentEntity.components.Model3d.model.translateX(window.userInputX)
-            currentEntity.components.Model3d.model.translateY(window.userInputY)
+
+            //at this point our player component's position starts to depend on our graphics engine's
+            //position of our model..  This is backwards and should be fixed, but it works for now.
             currentEntity.components.Model3d.model.translateZ(window.userInputZ)
+            currentEntity.components.Position.x = currentEntity.components.Model3d.model.position.x;
+            currentEntity.components.Position.y = currentEntity.components.Model3d.model.position.y;
+            currentEntity.components.Position.z = currentEntity.components.Model3d.model.position.z;
+
             if(window.userTurnL != 0) {
               currentEntity.components.Model3d.model.rotateOnAxis( new THREE.Vector3(0,1,0), .2 )
             }
@@ -417,14 +420,13 @@ define(function () {
             if(typeof currentEntity.components.RandomWalker != "undefined") {
               var plusOrMinus = Math.random() < 0.5 ? -1 : 1;
               var stepSize = currentEntity.components.RandomWalker.stepSize;
-              if(currentEntity.components.Position.x + plusOrMinus*stepSize < 1840 && currentEntity.components.Position.x + plusOrMinus*stepSize > 0) {
+
                 currentEntity.components.Position.x+=(plusOrMinus*stepSize);
-              }
+
 
               plusOrMinus = Math.random() < 0.5 ? -1 : 1;
-              if(currentEntity.components.Position.y + plusOrMinus*stepSize < 900 && currentEntity.components.Position.y + plusOrMinus*stepSize > 0) {
-                currentEntity.components.Position.y+=(plusOrMinus*stepSize);
-              }
+                currentEntity.components.Position.z+=(plusOrMinus*stepSize);
+
             }
           }
       },
@@ -434,13 +436,14 @@ define(function () {
         if(typeof collidedWithEntity.components.Collides != "undefined") {
           if(collidedWithEntity.components.Collides.permeability == 0 && ECS.Entities.Player.components.Collides.permeability == 0) {
             var playerX = ECS.Entities.Player.components.Position.x;
-            var playerY = ECS.Entities.Player.components.Position.y;
+            var playerZ = ECS.Entities.Player.components.Position.z;
             var collX = collidedWithEntity.components.Position.x;
-            var collY = collidedWithEntity.components.Position.y;
-            if(playerY < collY) {
-              ECS.Entities.Player.components.Position.y = ECS.Entities.Player.components.Position.y - .06;
+            var collZ = collidedWithEntity.components.Position.z;
+
+            if(playerZ < collZ) {
+              ECS.Entities.Player.components.Position.z = ECS.Entities.Player.components.Position.z - .06;
             } else {
-              ECS.Entities.Player.components.Position.y = ECS.Entities.Player.components.Position.y + .06;
+              ECS.Entities.Player.components.Position.z = ECS.Entities.Player.components.Position.z + .06;
             }
             if(playerX < collX) {
               ECS.Entities.Player.components.Position.x = ECS.Entities.Player.components.Position.x - .06;

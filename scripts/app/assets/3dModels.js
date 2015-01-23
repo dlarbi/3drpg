@@ -44,6 +44,7 @@ define(function () {
       return pixels;
     },
 
+    //Super deprecated.  This is just a fun relic
     getPlayerModel : function() {
       var pixels = [];
       for (var x = -150; x < 150; x+=5) {
@@ -58,6 +59,17 @@ define(function () {
       }
       return pixels;
     },
+
+    flatFloor : function() {
+      var floorGeometry = new THREE.PlaneBufferGeometry(10, 10, 10, 10);
+      var texture    = new THREE.ImageUtils.loadTexture("../../../images/dirt.jpg");
+      var material = new THREE.MeshBasicMaterial( { map:texture } );
+      var floor = new THREE.Mesh(floorGeometry, material);
+      floor.position.y = 0;
+      floor.rotation.x = -Math.PI / 2;
+      return floor;
+    },
+
     cube3d : function() {
       var geometry = new THREE.BoxGeometry( .4, .4, .4);
       var material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
@@ -65,18 +77,64 @@ define(function () {
       return cube;
     },
 
-    loadFemaleCharacter : function() {
-      var geo;
-      var loader = new THREE.ObjectLoader();
-      loader.load( "../../../scripts/app/assets/sinon-sword-art-online.json", function( geometry ) {
-        geometry.scale.set( 1, 1, 1 );
-        this.femaleCharacter = geometry;
-      });
+    starrySky : function() {
+      var imagePrefix = "../../../images/galaxy";
+      var directions  = ["xpos", "xneg", "ypos", "yneg", "zpos", "zneg"];
+      var imageSuffix = ".jpg";
+      var skyGeometry = new THREE.BoxGeometry( 2, 2, 2 );
+
+      var materialArray = [];
+      for (var i = 0; i < 6; i++) {
+        materialArray.push( new THREE.MeshBasicMaterial({
+          map: THREE.ImageUtils.loadTexture( imagePrefix + imageSuffix ),
+          side: THREE.BackSide
+        }));
+      }
+
+        var skyMaterial = new THREE.MeshFaceMaterial( materialArray );
+        var skyBox = new THREE.Mesh( skyGeometry, skyMaterial );
+      return skyBox;
     },
 
-    femaleCharacter : "undefined",
-    preloadModels : function() {
-      this.loadFemaleCharacter();
-    }
+    cityScape : function() {
+      var imagePrefix = "../../../images/city_";
+      var directions  = ["right", "left", "top", "yneg", "front", "back"];
+      var imageSuffix = ".jpg";
+      var skyGeometry = new THREE.BoxGeometry( 2, 2, 2 );
+
+      var materialArray = [];
+      for (var i = 0; i < 6; i++) {
+        materialArray.push( new THREE.MeshBasicMaterial({
+          map: THREE.ImageUtils.loadTexture( imagePrefix + directions[i] + imageSuffix ),
+          side: THREE.BackSide
+        }));
+      }
+
+      var skyMaterial = new THREE.MeshFaceMaterial( materialArray );
+      var skyBox = new THREE.Mesh( skyGeometry, skyMaterial );
+      return skyBox;
+    },
+
+    desert : function() {
+      var imagePrefix = "../../../images/desert_";
+      var directions  = ["right", "left", "top", "yneg", "front", "back"];
+      var imageSuffix = ".jpg";
+      var skyGeometry = new THREE.BoxGeometry( 2, 2, 2 );
+
+      var materialArray = [];
+      for (var i = 0; i < 6; i++) {
+        materialArray.push( new THREE.MeshBasicMaterial({
+          map: THREE.ImageUtils.loadTexture( imagePrefix + directions[i] + imageSuffix ),
+          side: THREE.BackSide
+        }));
+      }
+
+      var skyMaterial = new THREE.MeshFaceMaterial( materialArray );
+      var skyBox = new THREE.Mesh( skyGeometry, skyMaterial );
+      return skyBox;
+    },
+
+    femaleCharacter : "undefined"
+
   };
 });
