@@ -72,10 +72,11 @@ define(function () {
         this.z = z;
         return this;
       },
-      Velocity : function() {
+      Velocity : function(dx, dy, dz) {
         this.name = 'Velocity';
-        this.dX = 0;
-        this.dY = 0;
+        this.dX = dx;
+        this.dY = dy;
+        this.dZ = dz;
         return this;
       },
       PlayerControlled : function(player) {
@@ -139,16 +140,16 @@ define(function () {
         this.type = "Dungeon";
         this.followPlayer = true;
         this.mapMatrix = {
-          1: [0,0,1,0,0,0,1,1,0,0,1],
+          1: [1,0,1,0,0,0,1,1,0,0,1],
           2: [0,0,1,0,0,0,1,0,1,0,1],
           3: [0,0,1,0,0,0,1,0,1,0,1],
           4: [0,0,1,0,0,0,1,0,1,0,1],
-          5: [0,0,1,0,0,0,1,0,1,0,1],
-          6: [0,0,1,0,0,0,1,0,1,0,1],
-          7: [0,0,1,0,0,0,1,0,1,0,1],
+          5: [1,0,1,0,0,0,1,0,1,0,1],
+          6: [1,0,1,0,0,0,1,0,1,0,1],
+          7: [1,0,1,0,0,0,1,0,1,0,1],
           8: [0,0,1,0,0,0,1,0,1,0,1],
           9: [0,0,1,0,0,0,1,0,1,0,1],
-          10:[0,0,0,0,0,0,1,0,1,0,1],
+          10:[1,0,0,0,0,0,1,0,1,0,1],
         }
         return this;
       },
@@ -167,6 +168,17 @@ define(function () {
         this.scene.add(ambientLight);
         document.body.appendChild( this.renderer.domElement );
         ECS.Scene = this;
+        return this;
+      },
+      Quests : function(questSet) {
+        this.name = "Quests";
+        this.quests = questSet;
+        this.currentQuest = this.quests[0];
+        return this;
+      },
+      QuestGoal : function(questName) {
+        this.name = "QuestGoal";
+        this.questName = questName;
         return this;
       }
     },
@@ -198,7 +210,7 @@ define(function () {
           if(typeof currentEntity.components.Model3d != "undefined") {
             if(typeof currentEntity.components.Size != "undefined") {
               size = currentEntity.components.Size.size;
-              currentEntity.components.Model3d.model.scale.set(size,size,size)
+              currentEntity.components.Model3d.model.scale.set(size,size,size);
             }
             ECS.Scene.scene.add(currentEntity.components.Model3d.model)
           }
@@ -266,41 +278,39 @@ define(function () {
       },
 
       buildMap : function(entities) {
-        var map = $('#map');
         var currentEntity;
         var mapMatrix;
         for(var i = 0; i < entities.length; i++) {
           currentEntity = entities[i];
           //type might be dungeon.  We will add a path through the dungeon and the collideable obstacles into the world.  ie. walls, rivers, terrain, etc.
           if(typeof currentEntity.components.Map != "undefined") {
-            fullMapMatrix = currentEntity.components.Map.mapMatrix;
+            var fullMapMatrix = currentEntity.components.Map.mapMatrix;
             for(var x = 1; x < 11 ;x++){
-            var mapMatrixRow = fullMapMatrix[x];
-            var obstacle;
-            var obstacleXLocation;
-            var obstacleYLocation;
-            var obstacleEntityCollection = [];
-            var mapMatrixN = mapMatrixRow.length;
-            var mapMatrixSectionWidth = map.width()/mapMatrixN;
-            var mapMatrixSectionHeight = map.height()/11;
-            console.log(mapMatrixSectionHeight)
-            for(var n = 0; n < mapMatrixN; n++){
-              obstacle = mapMatrixRow[n];
-              obstacleXLocation = n * mapMatrixSectionWidth;
-              if(obstacle == 1) {
-                //map.append('<div style="position:fixed; width:200px; height:200px; background:#000; top:0; left:'+obstacleXLocation+'px;"></div>');
-                obstacleEntityCollection[n] = new ECS.APP.Entity();
-                obstacleEntityCollection[n].addComponent(new ECS.APP.Components.Collides(false));
-                obstacleEntityCollection[n].addComponent(new ECS.APP.Components.Size(mapMatrixSectionWidth));
-                obstacleEntityCollection[n].addComponent(new ECS.APP.Components.Position(obstacleXLocation, mapMatrixSectionHeight*x, 1));
-                //obstacleEntityCollection[n].print();
-                var cssModel = ECS.Models.cssCube();
-                cssModel.modelData = '<div style="position:fixed; z-index:0; height:'+mapMatrixSectionWidth+'px; background:#000;pointer-events:none;"></div>'
-                obstacleEntityCollection[n].addComponent(new ECS.APP.Components.CSSModel(cssModel));
-                entityArray.push(obstacleEntityCollection[n]);
+              var mapMatrixRow = fullMapMatrix[x];
+              var obstacle;
+              var obstacleXLocation;
+              var obstacleYLocation;
+              var obstacleEntityCollection = [];
+              var mapMatrixN = mapMatrixRow.length;
+              var mapMatrixSectionWidth = currentEntity.components.Size.size;
+              var mapMatrixSectionLength = currentEntity.components.Size.size;
+
+              for(var n = 0; n < mapMatrixN; n++){
+                obstacle = mapMatrixRow[n];
+                obstacleXLocation = n * mapMatrixSectionWidth;
+                if(obstacle == 1) {
+                  //map.append('<div style="position:fixed; width:200px; height:200px; background:#000; top:0; left:'+obstacleXLocation+'px;"></div>');
+                  obstacleEntityCollection[n] = new ECS.APP.Entity();
+                  obstacleEntityCollection[n].addComponent(new ECS.APP.Components.Collides(false));
+                  obstacleEntityCollection[n].addComponent(new ECS.APP.Components.Size(mapMatrixSectionWidth));
+                  obstacleEntityCollection[n].addComponent(new ECS.APP.Components.Position(obstacleXLocation-20, currentEntity.components.Size.size/5, mapMatrixSectionLength*x/2 - 20));
+                  //obstacleEntityCollection[n].print();
+                  var obstacleModel = ECS.Models.cube3d();
+                  obstacleEntityCollection[n].addComponent(new ECS.APP.Components.Model3d(obstacleModel));
+                  window.entityArray.push(obstacleEntityCollection[n]);
+                }
               }
             }
-          }
 
           }
         }
@@ -363,7 +373,7 @@ define(function () {
 
           }
         }
-        window.userInputX = window.userInputY = window.userTurnL = window.userTurnR = window.userInputZ = 0;
+
       },
 
       collisionDetection : function(entities) {
@@ -382,7 +392,7 @@ define(function () {
                 var yDist = Math.abs(currentEntity.components.Position.y - otherEntity.components.Position.y);
                 var zDist = Math.abs(currentEntity.components.Position.z - otherEntity.components.Position.z);
 
-                if(xDist < currentEntity.components.Size.size/1.5 && yDist < currentEntity.components.Size.size/1.5 && zDist < currentEntity.components.Size.size/1.5) {
+                if(xDist < currentEntity.components.Size.size/4 && yDist < currentEntity.components.Size.size/4 && zDist < currentEntity.components.Size.size/4) {
                   if(otherEntity.id == ECS.Entities.Player.id) {
 
                       $(window).trigger('playerCollision', [currentEntity]);
@@ -467,6 +477,21 @@ define(function () {
         ECS.UI.updatePlayerHealth(ECS.Entities.Player.components.Health.value);
       },
 
+      quests: function(entities) {
+        var currentEntity;
+        for(var i = 0; i < entities.length; i++) {
+          currentEntity = entities[i];
+          if(typeof currentEntity.components.Quests != "undefined") {
+            if(currentEntity.components.Quests.currentQuest.complete == false) {
+              ECS.UI.showCurrentQuest(currentEntity.components.Quests.currentQuest.goal);
+            } else {
+              ECS.UI.showCurrentQuest('SUCCESS!');
+            }
+
+          }
+        }
+      },
+
       entityImpact: function(evt, entity1, entity2) {
         //This branch represents a projectile entity1 colliding with an entity2 with health
         if(typeof entity1.components.Projectile != "undefined") {
@@ -517,25 +542,30 @@ define(function () {
       },
 
       attack: function(evt, attackingEntity) {
-
-          var projectile = new ECS.APP.Entity();
-          projectile.addComponent(new ECS.APP.Components.Position(attackingEntity.components.Position.x + 120, attackingEntity.components.Position.y + 120, 1));
-          projectile.addComponent(new ECS.APP.Components.CSSModel(ECS.Models.cssBullet()));
-          projectile.addComponent(new ECS.APP.Components.Collides());
-          projectile.addComponent(new ECS.APP.Components.Size(20));
-          projectile.addComponent(new ECS.APP.Components.Projectile(ECS.Entities.Player.components.Position.x, ECS.Entities.Player.components.Position.y));
-
-
+        var projectile = new ECS.APP.Entity();
+        projectile.addComponent(new ECS.APP.Components.Position(attackingEntity.components.Position.x + 120, attackingEntity.components.Position.y + 120, 1));
+        projectile.addComponent(new ECS.APP.Components.CSSModel(ECS.Models.cssBullet()));
+        projectile.addComponent(new ECS.APP.Components.Collides());
+        projectile.addComponent(new ECS.APP.Components.Size(20));
+        projectile.addComponent(new ECS.APP.Components.Projectile(ECS.Entities.Player.components.Position.x, ECS.Entities.Player.components.Position.y));
         window.entityArray.push(projectile)
         ECS.APP.Systems.renderCSSModel(entityArray);
       },
 
       playerAttack : function(evt, attackingEntity) {
         var projectile = new ECS.APP.Entity();
-        projectile.addComponent(new ECS.APP.Components.Position(attackingEntity.components.Position.x + 120, attackingEntity.components.Position.y + 120, 1));
-        projectile.addComponent(new ECS.APP.Components.CSSModel(ECS.Models.cssBullet()));
-        projectile.addComponent(new ECS.APP.Components.Collides());
-        projectile.addComponent(new ECS.APP.Components.Size(20));
+        projectile.addComponent(new ECS.APP.Components.Model3d(ECS.Models.cube3d()));
+        projectile.addComponent(new ECS.APP.Components.Size(.2));
+        projectile.addComponent(new ECS.APP.Components.Velocity(.1, .1, .1));
+        projectile.addComponent(new ECS.APP.Components.Position(attackingEntity.components.Position.x+.5, 1, attackingEntity.components.Position.z+.5));
+        window.entityArray.push(projectile)
+        ECS.APP.Systems.render3dModel(entityArray);
+
+        /*
+        projectile.addComponent(new ECS.APP.Components.Position(attackingEntity.components.Position.x+3, 1, attackingEntity.components.Position.y+3));
+        projectile.addComponent(new ECS.APP.Components.Model3d(ECS.Models.cube3d()));
+        //projectile.addComponent(new ECS.APP.Components.Collides());
+        projectile.addComponent(new ECS.APP.Components.Size(.4));
         originX = attackingEntity.components.Position.x;
         originY = attackingEntity.components.Position.y;
         destinationX = window.clickX;
@@ -550,7 +580,8 @@ define(function () {
         window.clickX = 0;
         window.clickY = 0;
         window.entityArray.push(projectile)
-        ECS.APP.Systems.renderCSSModel(entityArray);
+        ECS.APP.Systems.render3dModel(entityArray);
+        */
       },
 
       attackDetection : function(entities) {
@@ -572,21 +603,16 @@ define(function () {
       },
 
       projectiles : function(entities) {
-        var currentEntity;
+        var currentEntity, dx, dy, dz;
         for(var i = 0; i < entities.length; i++) {
           currentEntity = entities[i];
-          if(typeof currentEntity.components.Projectile != "undefined") {
-            currentEntity.components.Position.x = currentEntity.components.Projectile.destination.x;
-            currentEntity.components.Position.y = currentEntity.components.Projectile.destination.y;
-            $('[data-entity="'+currentEntity.id+'"]').css('transition', '1s linear all');
-
-            currentEntity.components.Projectile.timer--;
-
-            if(currentEntity.components.Projectile.timer <= 0) {
-              $('[data-entity="'+currentEntity.id+'"]').remove();
-              currentEntity.components = {};
-            }
-
+          if(typeof currentEntity.components.Velocity != "undefined") {
+            dx = currentEntity.components.Velocity.dX;
+            dy = currentEntity.components.Velocity.dY;
+            dz = currentEntity.components.Velocity.dZ;
+            currentEntity.components.Position.x += dx;
+            currentEntity.components.Position.z += dz;
+            currentEntity.components.Position.y += dy;
           }
         }
       }
@@ -594,6 +620,14 @@ define(function () {
 
     getEntitiesCount : function() {
       return ECS.Entities.count;
+    },
+    getPlayerEntity: function() {
+      if(typeof ECS.Entities.Player != "undefined") {
+        return ECS.Entities.Player;
+      } else {
+        return false;
+      }
+
     }
   };
 });

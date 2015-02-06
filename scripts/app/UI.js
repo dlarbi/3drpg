@@ -2,6 +2,7 @@ define(function() {
 
   var PlayerHealth;
   var HealthDOMElement = $('#PlayerHealth');
+  var QuestListDOMElement = $('#QuestList');
 
   var setUIHealth = function(value) {
     HealthDOMElement.html(value);
@@ -17,6 +18,10 @@ define(function() {
     updateEntityHealth : function(entity) {
       var percentWidth = 100*entity.components.Health.value/20
       $('[data-entity="'+entity.id+'"] #health').css('width', percentWidth + '%');
+      return;
+    },
+    showCurrentQuest : function(quest) {
+      QuestListDOMElement.html(quest);
       return;
     }
   }

@@ -96,6 +96,10 @@ define(function () {
       return skyBox;
     },
 
+    renderedMapFromMatrix : function(Map) {
+      
+    },
+
     cityScape : function() {
       var imagePrefix = "../../../images/city_";
       var directions  = ["right", "left", "top", "yneg", "front", "back"];
