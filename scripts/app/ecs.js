@@ -120,7 +120,7 @@ define(function () {
         this.name = "Attacker";
         return this;
       },
-      Projectile : function(x, y) {
+      Projectile : function() {
         this.name = "Projectile";
         var timer = timer || 50;
         this.destination = {x:x, y:y},
@@ -553,9 +553,11 @@ define(function () {
       },
 
       playerAttack : function(evt, attackingEntity) {
+        window.userInputLClick = 0;
         var projectile = new ECS.APP.Entity();
         projectile.addComponent(new ECS.APP.Components.Model3d(ECS.Models.cube3d()));
         projectile.addComponent(new ECS.APP.Components.Size(.2));
+        //I need the vector from a model to a mouse click, so I can pass it's unit vector to Velocity().
         projectile.addComponent(new ECS.APP.Components.Velocity(.1, .1, .1));
         projectile.addComponent(new ECS.APP.Components.Position(attackingEntity.components.Position.x+.5, 1, attackingEntity.components.Position.z+.5));
         window.entityArray.push(projectile)
@@ -592,7 +594,7 @@ define(function () {
             if(typeof currentEntity.components.PlayerControlled != "undefined"){
               if(window.userInputLClick == 1) {
                 $(window).trigger('playerAttack', [currentEntity]);
-                window.userInputLClick = 0;
+
               }
             } else {
               $(window).trigger('attack', [currentEntity]);

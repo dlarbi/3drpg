@@ -1,6 +1,10 @@
 define(function () {
-
+  var APP;
   return {
+    init: function(APP){
+      APP = APP;
+    },
+
     mouseInputOn: function() {
       window.userInputX = 0;
       window.userInputY = 0;

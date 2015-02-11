@@ -18,6 +18,7 @@ require(["helper/util","app/ecs", "app/observers", "assets/3dModels", "app/UI", 
 
 
     // start game
+    Utilities.init(APP);
     Utilities.mouseInputOn();
     Utilities.keyboardInputOn();
     APP.initialize(APP, Models, UI, Utilities);

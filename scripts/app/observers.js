@@ -32,6 +32,7 @@ define(function () {
       var throttledAttack = _.throttle(APP.Systems.attack, 3000, {trailing:false});
       $(window).on('attack', throttledAttack);
       $(window).on('playerAttack', APP.Systems.playerAttack);
+
     }
 
   }
