@@ -1,4 +1,4 @@
-3d Entity Component Systems game engine
+#3d Entity Component Systems RPG game engine
 ![Alt text](/images/screenshot2.jpg?raw=true "Optional Title")
 The beginnings of a 3d RPG game in the browser. You can download the archive, and run cubeworld.html. Must be running on localhost or on your webserver.
 
