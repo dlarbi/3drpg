@@ -1,6 +1,6 @@
 #3d Entity Component Systems RPG game engine
 ![Alt text](/images/screenshot2.jpg?raw=true "Optional Title")
-![Alt text](/images/screenshot1.jpg?raw=true "Optional Title")
+
 
 A framework for building a 3d RPG game in the browser. You can download the archive, and run cubeworld.html example. Must be running on localhost or on your webserver.
 
@@ -56,6 +56,8 @@ There are many components available in the engine to add to your entities. You c
     APP.Components.Scene()                                                      //Has a bunch of default settings that render the world, cameras, etc.
     APP.Components.Quests(questSet)                                             //Can be given to a player entity, and quest system will be active
     APP.Components.QuestGoal(questName)
+
+![Alt text](/images/screenshot1.jpg?raw=true "Optional Title")
 
 ####Systems
 
