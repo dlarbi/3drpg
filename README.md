@@ -35,7 +35,13 @@ We could also add a position to our player. The position Component has 3 propert
 
     player.addComponent(new APP.Components.Position(1, 1, 1));
 
-There are many components available in the engine to add to your entities. You can combine them for silly results! Unfortunately I don't have time at the moment to detail all of their properties, but you can experiment by attaching components to an entity, and they using entity.print().
+There are many components available in the engine to add to your entities. You can combine them for silly results! The ECS architecture avoids crazy inheritence chains by composing objects instead of implementing interfaces/abstract/base classes.  For example if you want a player controlled coin, you create an entity, and implement:
+
+    var entity = new APP.Entity();
+    entity.addComponent(new APP.Components.PlayerControlled());
+    entity.addComponent(new APP.Components.Coin());
+
+Unfortunately I don't have time at the moment to detail all of the components' properties, but you can experiment by attaching components to an entity, and they using entity.print().  You can make some crazy objects in your game world, and notice how deep inheritence chains are avoided.
     
     APP.Components.Health(value)
     APP.Components.TakesDamage(multiplier)
